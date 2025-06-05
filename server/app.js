@@ -1,7 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
-const PORT = 5005;
+const PORT = process.env.PORT || 5005;
 const cors = require('cors');
 
 // STATIC DATA
@@ -18,7 +18,7 @@ const app = express();
 app.use(
   cors({
     // Add the URLs of allowed origins to this array
-    origin: ['http://localhost:5173', 'https://front-cohort-tools-mini-project.onrender.com'],
+    origin: ['http://localhost:5173', 'https://front-cohort-tools-mini-project.onrender.com', '93.107.57.232'],
   })
 );
 
