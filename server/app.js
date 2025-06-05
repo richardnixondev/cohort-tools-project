@@ -18,7 +18,7 @@ const app = express();
 app.use(
   cors({
     // Add the URLs of allowed origins to this array
-    origin: ['http://localhost:5173', 'http://example.com'],
+    origin: ['http://localhost:5173', 'https://front-cohort-tools-mini-project.onrender.com'],
   })
 );
 
