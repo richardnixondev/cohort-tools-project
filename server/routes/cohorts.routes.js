@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create a cohort
+// POST create a cohort 
 router.post('/', async (req, res) => {
   try {
     const newCohort = await Cohort.create(req.body);
