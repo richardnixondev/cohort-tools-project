@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
+const authRouter = require("./routes/auth.routes");
+const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 const app = express();
 const PORT = process.env.PORT || 5005;
@@ -25,6 +27,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.static('public'));
+app.use("/auth", authRouter);  
 
 // Docs route
 app.get('/docs', (req, res) => {
@@ -35,8 +38,8 @@ app.get('/docs', (req, res) => {
 const cohortRoutes = require('./routes/cohorts.routes');
 const studentRoutes = require('./routes/students.routes');
 
-app.use('/api/cohorts', cohortRoutes);
-app.use('/api/students', studentRoutes);
+app.use('/api/cohorts', isAuthenticated, cohortRoutes);
+app.use('/api/students', isAuthenticated, studentRoutes);
 
 // Start Server
 app.listen(PORT, () => {
