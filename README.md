@@ -1,4 +1,4 @@
-# 🛍️ Mini Project API - MERN Stack Project
+#  Mini Project API - MERN Stack Project
 
 This is the backend of a mini project featuring student portal JWT-protected authentication. The system supports user registration and login, secure data access, and integration with a cloud-hosted MongoDB database.
 
