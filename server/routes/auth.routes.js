@@ -70,50 +70,43 @@ router.post('/signup', (req, res, next) => {
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post('/login', (req, res, next) => {
   const { email, password } = req.body;
- 
-  // Check if email or password are provided as empty string 
-  if (email === '' || password === '') {
-    res.status(400).json({ message: "Provide email and password." });
-    return;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Provide email and password." });
   }
- 
-  // Check the users collection if a user with the same email exists
+
   User.findOne({ email })
     .then((foundUser) => {
-    
       if (!foundUser) {
-        // If the user is not found, send an error response
-        res.status(401).json({ message: "User not found." })
-        return;
+        return res.status(401).json({ message: "User not found." });
       }
- 
-      // Compare the provided password with the one saved in the database
+
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
- 
-      if (passwordCorrect) {
-        // Deconstruct the user object to omit the password
-        const { _id, email, name } = foundUser;
-        
-        // Create an object that will be set as the token payload
-        const payload = { _id, email, name };
- 
-        // Create and sign the token
-        const authToken = jwt.sign( 
-          payload,
-          process.env.TOKEN_SECRET,
-          { algorithm: 'HS256', expiresIn: "6h" }
-        );
- 
-        // Send the token as the response
-        res.status(200).json({ authToken: authToken });
+
+      if (!passwordCorrect) {
+        return res.status(401).json({ message: "Unable to authenticate the user." });
       }
-      else {
-        res.status(401).json({ message: "Unable to authenticate the user" });
-      }
- 
+
+      const { _id, email, name } = foundUser;
+      const payload = { _id, email, name };
+
+      const authToken = jwt.sign(
+        payload,
+        process.env.TOKEN_SECRET,
+        { algorithm: 'HS256', expiresIn: "6h" }
+      );
+
+      return res.status(200).json({ authToken });
     })
-    .catch(err => res.status(500).json({ message: "Internal Server Error" }));
+    .catch(err => {
+      console.error("Login error:", err);
+      res.status(500).json({ 
+        message: "Internal Server Error", 
+        ...(process.env.NODE_ENV !== 'production' && { error: err.message })
+      });
+    });
 });
+
 
 
 // GET  /auth/verify
@@ -129,3 +122,27 @@ router.get('/verify', isAuthenticated, (req, res, next) => {       // <== CREATE
 });
 
 module.exports = router;
+
+
+// GET /users/:id - Retrieves a specific user by ID (Protected Route)
+router.get('/users/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Verifica se o ID é válido (formato do MongoDB)
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid user ID format." });
+    }
+
+    const user = await User.findById(id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: `No user found with ID: ${id}` });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("Error retrieving user:", err.message);
+    res.status(500).json({ message: "An unexpected error occurred while retrieving the user." });
+  }
+});

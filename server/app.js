@@ -28,6 +28,7 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.static('public'));
 app.use("/auth", authRouter);  
+app.use("/api", authRouter);
 
 // Docs route
 app.get('/docs', (req, res) => {
